@@ -17,12 +17,9 @@ class UserLogin
      */
     public function handle(Request $request, Closure $next)
     {
-        if(empty(Auth::id())){
+        if(!Auth::check() && Auth::user()->is_admin){
+
             return redirect('/');
-        }else{
-            if (Auth::user()->usertype == 1){
-                return redirect('/');
-            }
         }
         return $next($request);
     }

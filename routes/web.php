@@ -18,40 +18,38 @@ use App\Http\Controllers\AdminController;
 */
 
 Route::get('/',[HomeController::class,'index']);
-Route::get('/home',[HomeController::class,'redirect'])->middleware('auth','verified');
+Route::get('/home',[HomeController::class,'redirect'])->middleware('auth','verified')->name('dashboard');
 
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified'
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'
 ])->group(function () {
 
     // Route::get('/dashboard', function () {
     //     return view('dashboard');
     // })->name('dashboard');
 
-    //user can access this
+    //user or any authenticated person can access this
     Route::get('/cancel-appointment/{id}',[HomeController::class,'cancelAppointment']);
     Route::match(['get','post'],'/appointment',[HomeController::class,'appointment']);
+    
 
-    //only admin can access this
-    Route::match(['get','post'],'/add-doctor',[AdminController::class,'addDoctor']);
-    Route::get('/delete-doctor/{id}',[AdminController::class,'deleteDoctor']);
-    Route::match(['get','post'],'/edit-doctor/{id}',[AdminController::class,'editDoctor']);
+//only admin can access this
+    Route::group(['middleware' => ['is_admin']], function(){
+        
+        Route::match(['get','post'],'/add-doctor',[AdminController::class,'addDoctor']);
+        Route::get('/delete-doctor/{doctor}',[AdminController::class,'deleteDoctor']);
+        Route::match(['get','post'],'/edit-doctor/{doctor}',[AdminController::class,'editDoctor']);
 
-    Route::match(['get','post'],'/send-mail/{id}',[AdminController::class,'sendMail']);
-    Route::get('/view-appointments',[AdminController::class,'viewAppointment']);;
-    Route::get('/cancel/{id}',[AdminController::class,'cancel']);
-    Route::get('/approve/{id}',[AdminController::class,'approve']);
-
-});
-
-//Route::group(['middleware' => ['userlogin']], function(){
+        Route::match(['get','post'],'/send-mail/{appointment}',[AdminController::class,'sendMail']);
+        Route::get('/view-appointments',[AdminController::class,'viewAppointment']);;
+        Route::get('/cancel/{appointment}',[AdminController::class,'cancel']);
+        Route::get('/approve/{appointment}',[AdminController::class,'approve']);
+        Route::get('/view-doctor',[AdminController::class,'viewDoctor']);
+    });
+//
     // Route::get('/admin/dashboard', function () {
     //      return view('admin.dashboard');
     //  })->name('admin.dashboard');
     
 //});
 
-
-Route::get('/view-doctor',[AdminController::class,'viewDoctor']);
+});

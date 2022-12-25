@@ -50,6 +50,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'is_role'=> 'boolean',
     ];
 
     /**
@@ -59,5 +60,11 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $appends = [
         'profile_photo_url',
+        
     ];
+
+    protected function getIsAdminAttribute()
+    {
+        return $this->is_role == 1;
+    }
 }
