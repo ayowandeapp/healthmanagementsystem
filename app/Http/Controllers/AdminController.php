@@ -61,19 +61,15 @@ class AdminController extends Controller
     public function viewDoctor()
     {
         $doctors = Doctor::get();
-        //$doctors['status_code'] = 200;  
-        // $doctors['status'] = true; 
-        //echo "<pre>"; print_r(json_decode(json_encode($doctors))); die;
-        //return $doctors;
 
         return view('admin.view_doctor')->with(compact('doctors'));
     }
     
-    public function deleteDoctor($id)
+    public function deleteDoctor(Doctor $doctor)
     {
-        if(Auth::id()){
-            if(Auth::user()->usertype == 1){
-                $doctor = Doctor::where(['id'=>$id]);
+        if(Auth::check()){
+            if(Auth::user()->is_admin){
+                //echo '<pre>'; print_r($doctor); die;
                 if ($doctor->count() > 0) {
                     $doctor->delete();
                     return redirect()->back()->with('message_success','Doctor Deleted Successfully');
@@ -84,7 +80,7 @@ class AdminController extends Controller
         }
     }
 
-    public function editDoctor($id, Request $request)
+    public function editDoctor(Doctor $doctor, Request $request)
     {
         if($request->isMethod('post')){
             $validatedData = $request->validate([
@@ -108,7 +104,7 @@ class AdminController extends Controller
             } else {
                 $input['imagename'] = $data['current_image'];
             }
-            Doctor::where('id', $id)->update([
+            $doctor->update([
                 'name'=>$data['name'],
                 'phone'=>$data['phone'],
                 'speciality'=>$data['speciality'],
@@ -117,7 +113,7 @@ class AdminController extends Controller
 
             return redirect('/view-doctor')->with('message_success', 'Doctor Edited successfully');
         }
-        $doctor = Doctor::find($id);
+        
         //echo "<pre>"; print_r($doctor); die;
         return view('admin.edit_doctor')->with(compact('doctor'));
     }
@@ -129,13 +125,12 @@ class AdminController extends Controller
         return view('admin.view_appointment')->with(compact('appointments'));
     }
 
-    public function approve($id)
+    public function approve(Appointment $appointment)
     {
-        if(Auth::id()){
-            if(Auth::user()->usertype == 1){
-                $approve = Appointment::where('id', $id);
-                if ($approve->count() > 0 ) {
-                    $approve->update(['status'=>'Approved']);
+        if(Auth::check()){
+            if(Auth::user()->is_admin){
+                if ($appointment->count() > 0 ) {
+                    $appointment->update(['status'=>'Approved']);
                     return redirect()->back()->with('message_success','Appointment Updated Successfully!');
                 }else{
                     return redirect()->back()->with('message_error','Appointment does not exist!');
@@ -149,13 +144,12 @@ class AdminController extends Controller
 
     }
 
-    public function cancel($id)
+    public function cancel(Appointment $appointment)
     {
-        if(Auth::id()){
-            if(Auth::user()->usertype == 1){
-                $approve = Appointment::where('id', $id);
-                if ($approve->count() > 0 ) {
-                    $approve->update(['status'=>'Cancelled']);
+        if(Auth::check()){
+            if(Auth::user()->is_admin){
+                if ($appointment->count() > 0 ) {
+                    $appointment->update(['status'=>'Cancelled']);
                     return redirect()->back()->with('message_success','Appointment Updated Successfully!');
                 }else{
                     return redirect()->back()->with('message_error','Appointment does not exist!');
@@ -169,20 +163,18 @@ class AdminController extends Controller
 
     }
 
-    public function sendMail($id, Request $request)
+    public function sendMail(Appointment $appointment, Request $request)
     {
         if($request->isMethod('post')){
-            $appointment = Appointment::find($id);
             $details = [
+                'name' => $appointment->name,
                 'body' => $request->body,
                 'actiontext' => $request->actiontext,
                 'actionurl' => $request->actionurl
-
             ];
             Notification::send($appointment, new SendEmailNotification($details));
             return redirect()->back();
         }
-        $appointment = Appointment::find($id);
 
         return view('admin.view_mail')->with(compact('appointment'));
     }

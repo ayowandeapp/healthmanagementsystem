@@ -12,25 +12,19 @@ class HomeController extends Controller
 {
     public function redirect(){
 
-        if(Auth::id()){
+        if(Auth::check()){
 
-            if(Auth::user()->usertype == 0){
+            if(!Auth::user()->is_admin){
                 $doctors = Doctor::get();
 
                 return view('user.home')->with(compact('doctors'));
             }else{
                 return view('admin.dashboard');
             }
-
-        }else{
-
-            return redirect()->back();
         }
     }
     public function index(){
-        if(Auth::id()){
-            return redirect('/home');
-        }
+        $this->redirect();
 
         $doctors = Doctor::get();
 
