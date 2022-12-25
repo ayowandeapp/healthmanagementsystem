@@ -42,6 +42,9 @@ class SendEmailNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
+                    ->from('ayooluwa71@gmail.com.com', 'Health Management System')
+                    ->subject('Appointment Notification')
+                    ->greeting('Hi '.$this->details['name'])
                     ->line($this->details['body'])
                     ->action($this->details['actiontext'], $this->details['actionurl'])
                     ->line('Thank you!');
